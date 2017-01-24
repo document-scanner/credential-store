@@ -139,6 +139,7 @@ public class AuthenticationDialog extends JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         this.username = usernameTextField.getText();
         this.password = passwordField.getPassword();
+        setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
