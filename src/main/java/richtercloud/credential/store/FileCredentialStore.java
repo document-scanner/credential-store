@@ -70,6 +70,9 @@ public class FileCredentialStore implements CredentialStore {
 
     @Override
     public String retrieve(Subject subject) throws CredentialException {
+        if(subject.getPrincipal() == null) {
+            throw new IllegalArgumentException("username's principal mustn't be null");
+        }
         XStream xStream = new XStream();
         Map<Object, String> store;
         if(!file.exists()) {
