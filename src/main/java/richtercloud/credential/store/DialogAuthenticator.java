@@ -25,7 +25,7 @@ public class DialogAuthenticator implements Authenticator {
     public final static String TOKEN_KEY = "token";
 
     @Override
-    public boolean authenticate(Subject username) {
+    public boolean authenticate(Subject subject) {
         AuthenticationDialog dialog = new AuthenticationDialog(null //parent
         );
         dialog.setLocationRelativeTo(null //component
@@ -39,8 +39,8 @@ public class DialogAuthenticator implements Authenticator {
                 dialog.getPassword());
         token.setRememberMe(true);
             //no need to ask for the password twice
-        username.login(token);
-        username.getSession().setAttribute(TOKEN_KEY, token);
+        subject.login(token);
+        subject.getSession().setAttribute(TOKEN_KEY, token);
         return true;
     }
 }

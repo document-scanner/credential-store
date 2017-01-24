@@ -26,9 +26,9 @@ public interface Authenticator {
      * Authenticates {@code username} using the implementation specific
      * mechanism
      *
-     * @param username
+     * @param subject
      * @return {@code true} if the authentication was successful, {@code false}
      * otherwise
      */
-    boolean authenticate(Subject username);
+    boolean authenticate(Subject subject);
 }
