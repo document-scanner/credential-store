@@ -29,8 +29,10 @@ public interface Authenticator {
      * @param subject
      * @return {@code true} if the authentication was successful, {@code false}
      * otherwise
+     * @throws richtercloud.credential.store.AuthenticatorException wraps any
+     * exception which might occur
      */
-    boolean authenticate(Subject subject);
+    boolean authenticate(Subject subject) throws AuthenticatorException;
 
     /**
      * Authenticates {@code subject} using the implementation specific
@@ -39,8 +41,10 @@ public interface Authenticator {
      * @param subject
      * @param fixedUsername
      * @return {@code true} if the authentication was successful, {@code false}
-     * otherwise
+     * otherwise (including cancelation/abortion of authentication by the user)
+     * @throws richtercloud.credential.store.AuthenticatorException wraps any
+     * exception which might occur
      */
     boolean authenticate(Subject subject,
-            String fixedUsername);
+            String fixedUsername) throws AuthenticatorException;
 }

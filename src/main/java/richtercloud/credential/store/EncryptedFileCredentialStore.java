@@ -110,4 +110,20 @@ public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
         String retValue = new String(token.getPassword());
         return retValue;
     }
+
+    @Override
+    public boolean isInit() {
+        return this.internalStore.isInit();
+    }
+
+    /**
+     * Initializes the store.
+     *
+     * @throws CredentialException wraps any exception
+     * @throws IllegalStateException if the store is already initialized
+     */
+    @Override
+    public void init() throws CredentialException {
+        this.internalStore.init();
+    }
 }

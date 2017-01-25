@@ -26,4 +26,20 @@ public interface CredentialStore<T> {
     void store(Subject subject, T password) throws CredentialException;
 
     T retrieve(Subject subject) throws CredentialException;
+
+    /**
+     * Initializes resources used by the pool. Initialization can be delayed
+     * until right before usage. The status can be checked with
+     * {@link #isInit() }.
+     *
+     * This is particulary useful if you want to avoid requesting a password
+     * input from user when the initilization of a resource still has to occur.
+     * In this case it'd be more elegant to request the intialization before
+     * requesting input for a password to store the resource.
+     * @throws richtercloud.credential.store.CredentialException wraps any
+     * exception which might occur
+     */
+    void init() throws CredentialException;
+
+    boolean isInit();
 }

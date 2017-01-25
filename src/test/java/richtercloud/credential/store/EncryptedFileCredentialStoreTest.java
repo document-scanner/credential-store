@@ -46,6 +46,7 @@ public class EncryptedFileCredentialStoreTest {
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
         CredentialStore<String> instance = new EncryptedFileCredentialStore<>(file);
+        instance.init();
         instance.store(subject, password);
         String result = instance.retrieve(subject);
         String expResult = password;

@@ -41,6 +41,7 @@ public class FileCredentialStoreTest {
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
         FileCredentialStore<String> instance = new FileCredentialStore<>(file);
+        instance.init();
         instance.store(subject, password);
         String result = instance.retrieve(subject);
         String expResult = password;

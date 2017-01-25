@@ -14,6 +14,10 @@
  */
 package richtercloud.credential.store;
 
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 
@@ -30,7 +34,7 @@ public class DialogAuthenticator implements Authenticator {
     }
 
     @Override
-    public boolean authenticate(Subject subject) {
+    public boolean authenticate(Subject subject) throws AuthenticatorException {
         return authenticate(subject,
                 null //fixedUsername
         );
@@ -38,7 +42,7 @@ public class DialogAuthenticator implements Authenticator {
 
     @Override
     public boolean authenticate(Subject subject,
-            String fixedUsername) {
+            String fixedUsername) throws AuthenticatorException {
         AuthenticationDialog dialog = new AuthenticationDialog(null, //parent
                 dialogLabelText,
                 fixedUsername
@@ -54,7 +58,17 @@ public class DialogAuthenticator implements Authenticator {
                 dialog.getPassword());
         token.setRememberMe(true);
             //no need to ask for the password twice
-        subject.login(token);
+        try {
+            subject.login(token);
+        } catch ( UnknownAccountException ex ) {
+            throw new AuthenticatorException(ex);
+        } catch ( IncorrectCredentialsException ex ) {
+            throw new AuthenticatorException(ex);
+        } catch ( LockedAccountException ex ) {
+            throw new AuthenticatorException(ex);
+        } catch ( AuthenticationException ex ) {
+            throw new AuthenticatorException(ex);
+        }
         subject.getSession().setAttribute(TOKEN_KEY, token);
         return true;
     }
