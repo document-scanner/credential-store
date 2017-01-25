@@ -18,11 +18,16 @@ import java.awt.Window;
 import javax.swing.JDialog;
 
 /**
- *
+ * Provides GUI components to enter a username and password which can be
+ * retrieved after the dialog has been closed. It allows to configure the label
+ * which explains which credentials to enter and for what and allows to make
+ * the username text field read-only in case only a password ought to be
+ * required.
  * @author richter
  */
 public class AuthenticationDialog extends JDialog {
     private static final long serialVersionUID = 1L;
+    public final static String LABEL_TEXT_DEFAULT = "Please enter credentials:";
     /**
      * The username entered in the username text field. {@code null} indicates
      * that the dialog has been canceled.
@@ -36,11 +41,32 @@ public class AuthenticationDialog extends JDialog {
 
     /**
      * Creates new form DialogAuthenticator
+     * @param parent the parent of the dialog (positioning has to be handled by
+     * caller)
+     * @param labelText the text of the label explaining which credentials to
+     * enter and for what
+     * @param fixedUsername {@code null} if the username (text field) ought to
+     * be editable, a read-only username which is displayed in the text field
+     * otherwise
      */
-    public AuthenticationDialog(Window parent) {
+    public AuthenticationDialog(Window parent,
+            String labelText,
+            String fixedUsername) {
         super(parent,
                 ModalityType.APPLICATION_MODAL);
         initComponents();
+        this.label.setText(labelText);
+        if(fixedUsername != null) {
+            usernameTextField.setText(fixedUsername);
+            usernameTextField.setEnabled(false);
+        }
+    }
+
+    public AuthenticationDialog(Window parent) {
+        this(parent,
+                LABEL_TEXT_DEFAULT,
+                null //fixedUsername
+        );
     }
 
     public String getUsername() {
@@ -66,6 +92,7 @@ public class AuthenticationDialog extends JDialog {
         passwordFieldLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        label = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -89,6 +116,8 @@ public class AuthenticationDialog extends JDialog {
             }
         });
 
+        label.setText("Please enter credentials:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -96,6 +125,7 @@ public class AuthenticationDialog extends JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(usernameTextFieldLabel)
@@ -115,6 +145,8 @@ public class AuthenticationDialog extends JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(usernameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(usernameTextFieldLabel))
@@ -122,7 +154,7 @@ public class AuthenticationDialog extends JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(passwordFieldLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
@@ -144,6 +176,7 @@ public class AuthenticationDialog extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel label;
     private javax.swing.JButton okButton;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordFieldLabel;
