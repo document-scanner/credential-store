@@ -15,11 +15,8 @@
 package richtercloud.credential.store;
 
 import java.io.File;
-import org.apache.shiro.subject.Subject;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  *
@@ -32,15 +29,11 @@ public class FileCredentialStoreTest {
      */
     @Test
     public void testStoreAndRetrieve() throws Exception {
-        Subject subject = mock(Subject.class);
-        String username = "username";
-        when(subject.getPrincipal()).thenReturn(username);
-            //working with SecurityUtils.getCurrentUser doesn't allow setting of
-            //principal
+        String subject = "username";
         String password = "password";
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
-        FileCredentialStore<String> instance = new FileCredentialStore<>(file);
+        FileCredentialStore<String, String> instance = new FileCredentialStore<>(file);
         instance.init();
         instance.store(subject, password);
         String result = instance.retrieve(subject);

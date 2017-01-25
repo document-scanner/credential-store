@@ -15,13 +15,8 @@
 package richtercloud.credential.store;
 
 import java.io.File;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.Subject;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  *
@@ -31,35 +26,24 @@ public class EncryptedFileCredentialStoreTest {
 
     @Test
     public void testStoreAndRetrieve() throws Exception {
-        Subject subject = mock(Subject.class);
-        String username = "username";
-        when(subject.getPrincipal()).thenReturn(username);
-            //working with SecurityUtils.getCurrentUser doesn't allow setting of
-            //principal
-        when(subject.isAuthenticated()).thenReturn(Boolean.TRUE);
-        Session session = mock(Session.class);
-        when(subject.getSession()).thenReturn(session);
-        UsernamePasswordToken token = mock(UsernamePasswordToken.class);
+        String subject = "username";
+        String key = "key";
         String password = "password";
-        when(token.getPassword()).thenReturn(password.toCharArray());
-        when(session.getAttribute(DialogAuthenticator.TOKEN_KEY)).thenReturn(token);
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
-        CredentialStore<String> instance = new EncryptedFileCredentialStore<>(file);
+        EncryptedCredentialStore<String, String> instance = new EncryptedFileCredentialStore<>(file);
         instance.init();
-        instance.store(subject, password);
-        String result = instance.retrieve(subject);
+        instance.store(subject, password, key);
+        String result = instance.retrieve(subject, key);
         String expResult = password;
         assertEquals(expResult, result);
         //test consecutive calls to retrieve reveal the same result
-        result = instance.retrieve(subject);
+        result = instance.retrieve(subject, key);
         assertEquals(expResult, result);
         //overwrite credential
         String password2 = "password2";
-        when(token.getPassword()).thenReturn(password2.toCharArray());
-        when(session.getAttribute(DialogAuthenticator.TOKEN_KEY)).thenReturn(token);
-        instance.store(subject, password2);
-        result = instance.retrieve(subject);
+        instance.store(subject, password2, key);
+        result = instance.retrieve(subject, key);
         expResult = password2;
         assertEquals(expResult, result);
     }

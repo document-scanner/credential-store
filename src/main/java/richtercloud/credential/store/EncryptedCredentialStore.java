@@ -15,14 +15,17 @@
 package richtercloud.credential.store;
 
 /**
+ * A {@link CredentialStore} which allows specification of passwords at the
+ * moment when credentials are stored.
+ *
+ * Implementations which use a fixed password set on initialization are possible
+ * as well - extend {@link CredentialStore}.
  *
  * @author richter
- * @param <S> the type of subject to store credentials for
- * @param <T> the type which contains the credentials data
  */
-public interface CredentialStore<S, T> extends CredentialStoreBase {
+public interface EncryptedCredentialStore<S, T> extends CredentialStoreBase {
 
-    void store(S subject, T password) throws CredentialException;
+    void store(S subject, T password, String key) throws CredentialException;
 
-    T retrieve(S subject) throws CredentialException;
+    T retrieve(S subject, String key) throws CredentialException;
 }

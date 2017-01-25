@@ -21,13 +21,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.shiro.subject.Subject;
 
 /**
  * A {@link CredentialStore} using file with plain text storage which might be a
  * security risk.
  *
  * @author richter
+ * @param <S> the type of subject to store credentials for
  * @param <T> the type which contains the credentials data
  */
 /*
@@ -35,11 +35,14 @@ internal implementation notes:
 - Subject can't be used for storage keys because it doesn't override equals and
 hashCode
 */
-public class FileCredentialStore<T> implements CredentialStore<T> {
+public class FileCredentialStore<S, T> implements CredentialStore<S, T> {
     private final static XStream X_STREAM = new XStream();
     private final File file;
 
     public FileCredentialStore(File file) {
+        if(file == null) {
+            throw new IllegalArgumentException("file mustn't be null");
+        }
         this.file = file;
     }
 
@@ -52,10 +55,7 @@ public class FileCredentialStore<T> implements CredentialStore<T> {
      * set
      */
     @Override
-    public void store(Subject subject, T password) throws CredentialException {
-        if(subject.getPrincipal() == null) {
-            throw new IllegalArgumentException("username's principal mustn't be null");
-        }
+    public void store(S subject, T password) throws CredentialException {
         if(!isInit()) {
             throw new IllegalStateException("store hasn't been initialized");
         }
@@ -66,7 +66,7 @@ public class FileCredentialStore<T> implements CredentialStore<T> {
         }else {
             store = (Map<Object, T>) xStream.fromXML(file);
         }
-        store.put(subject.getPrincipal(), password);
+        store.put(subject, password);
         try {
             xStream.toXML(store, new FileOutputStream(file));
         } catch (IOException ex) {
@@ -75,10 +75,7 @@ public class FileCredentialStore<T> implements CredentialStore<T> {
     }
 
     @Override
-    public T retrieve(Subject subject) throws CredentialException {
-        if(subject.getPrincipal() == null) {
-            throw new IllegalArgumentException("username's principal mustn't be null");
-        }
+    public T retrieve(S subject) throws CredentialException {
         if(!isInit()) {
             throw new IllegalStateException("store hasn't been initialized");
         }
@@ -88,7 +85,7 @@ public class FileCredentialStore<T> implements CredentialStore<T> {
         }else {
             store = (Map<Object, T>) X_STREAM.fromXML(file);
         }
-        T retValue = store.get(subject.getPrincipal());
+        T retValue = store.get(subject);
         return retValue;
     }
 

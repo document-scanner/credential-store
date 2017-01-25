@@ -25,12 +25,11 @@ import java.security.spec.InvalidParameterSpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.subject.Subject;
 
 /**
  *
  * @author richter
+ * @param <S> the type of subject to store credentials for
  * @param <T> the type which contains the credentials data
  */
 /*
@@ -39,12 +38,12 @@ internal implementation notes:
 allow EncryptedFileCredentialStore's T to be of any type and store serialized
 encrypted Strings in it
 */
-public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
+public class EncryptedFileCredentialStore<S, T> implements EncryptedCredentialStore<S, T> {
     private final static XStream X_STREAM = new XStream();
-    private final FileCredentialStore<String> internalStore;
+    private final FileCredentialStore<S, String> internalStore;
 
     public EncryptedFileCredentialStore(File file) {
-        internalStore = new FileCredentialStore<>(file);
+        this.internalStore = new FileCredentialStore<>(file);
     }
 
     /**
@@ -56,16 +55,13 @@ public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
      * set
      */
     @Override
-    public void store(Subject subject, T password) throws CredentialException {
-        if ( !subject.isAuthenticated() ) {
-            throw new IllegalStateException(String.format("user '%s' isn't "
-                    + "authenticated", subject));
-        }
-        String key = getSubjectPassword(subject);
+    public void store(S subject,
+            T password,
+            String key) throws CredentialException {
         //serialize password in order to make it possible to encrypt
         String passwordXML = X_STREAM.toXML(password);
         try {
-            String passwordXML0 = Encryptor.encrypt(key, passwordXML);
+            String passwordXML0 = Encryptor.encrypt(new String(key), passwordXML);
             internalStore.store(subject, passwordXML0);
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException | InvalidParameterSpecException ex) {
             throw new CredentialException(ex);
@@ -73,16 +69,12 @@ public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
     }
 
     @Override
-    public T retrieve(Subject subject) throws CredentialException {
-        if ( !subject.isAuthenticated() ) {
-            throw new IllegalStateException(String.format("user '%s' isn't "
-                    + "authenticated", subject));
-        }
+    public T retrieve(S subject,
+            String key) throws CredentialException {
         String passwordXML0 = internalStore.retrieve(subject);
         if(passwordXML0 == null) {
             return null;
         }
-        String key = getSubjectPassword(subject);
         try {
             String password0 = Encryptor.decrypt(key,
                     passwordXML0);
@@ -91,24 +83,6 @@ public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
         } catch (IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidParameterSpecException ex) {
             throw new CredentialException(ex);
         }
-    }
-
-    private String getSubjectPassword(Subject subject) {
-        Object tokenObject = subject.getSession().getAttribute(DialogAuthenticator.TOKEN_KEY);
-        if(tokenObject == null) {
-            throw new IllegalArgumentException(String.format("subject's "
-                    + "session is expected to have attribute '%s' to be set",
-                    DialogAuthenticator.TOKEN_KEY));
-        }
-        if(!(tokenObject instanceof UsernamePasswordToken)) {
-            throw new IllegalStateException(String.format("subject's "
-                    + "session attribute '%s' is expected to be of type %s",
-                    DialogAuthenticator.TOKEN_KEY,
-                    UsernamePasswordToken.class.getName()));
-        }
-        UsernamePasswordToken token = (UsernamePasswordToken) tokenObject;
-        String retValue = new String(token.getPassword());
-        return retValue;
     }
 
     @Override
