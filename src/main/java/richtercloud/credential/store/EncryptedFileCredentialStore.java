@@ -14,6 +14,7 @@
  */
 package richtercloud.credential.store;
 
+import com.thoughtworks.xstream.XStream;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
@@ -30,11 +31,20 @@ import org.apache.shiro.subject.Subject;
 /**
  *
  * @author richter
+ * @param <T> the type which contains the credentials data
  */
-public class EncryptedFileCredentialStore extends FileCredentialStore {
+/*
+internal implementation notes:
+- using ? pattern here (combining composition and interheritance in order to
+allow EncryptedFileCredentialStore's T to be of any type and store serialized
+encrypted Strings in it
+*/
+public class EncryptedFileCredentialStore<T> implements CredentialStore<T> {
+    private final static XStream X_STREAM = new XStream();
+    private final FileCredentialStore<String> internalStore;
 
     public EncryptedFileCredentialStore(File file) {
-        super(file);
+        internalStore = new FileCredentialStore<>(file);
     }
 
     /**
@@ -46,34 +56,37 @@ public class EncryptedFileCredentialStore extends FileCredentialStore {
      * set
      */
     @Override
-    public void store(Subject subject, String password) throws CredentialException {
+    public void store(Subject subject, T password) throws CredentialException {
         if ( !subject.isAuthenticated() ) {
             throw new IllegalStateException(String.format("user '%s' isn't "
                     + "authenticated", subject));
         }
         String key = getSubjectPassword(subject);
+        //serialize password in order to make it possible to encrypt
+        String passwordXML = X_STREAM.toXML(password);
         try {
-            String password0 = Encryptor.encrypt(key, password);
-            super.store(subject, password0);
+            String passwordXML0 = Encryptor.encrypt(key, passwordXML);
+            internalStore.store(subject, passwordXML0);
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException | InvalidParameterSpecException ex) {
             throw new CredentialException(ex);
         }
     }
 
     @Override
-    public String retrieve(Subject subject) throws CredentialException {
+    public T retrieve(Subject subject) throws CredentialException {
         if ( !subject.isAuthenticated() ) {
             throw new IllegalStateException(String.format("user '%s' isn't "
                     + "authenticated", subject));
         }
-        String password0 = super.retrieve(subject);
-        if(password0 == null) {
+        String passwordXML0 = internalStore.retrieve(subject);
+        if(passwordXML0 == null) {
             return null;
         }
         String key = getSubjectPassword(subject);
         try {
-            String retValue = Encryptor.decrypt(key,
-                    password0);
+            String password0 = Encryptor.decrypt(key,
+                    passwordXML0);
+            T retValue = (T) X_STREAM.fromXML(password0);
             return retValue;
         } catch (IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidParameterSpecException ex) {
             throw new CredentialException(ex);

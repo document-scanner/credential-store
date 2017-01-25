@@ -27,13 +27,14 @@ import org.apache.shiro.subject.Subject;
  * security risk.
  *
  * @author richter
+ * @param <T> the type which contains the credentials data
  */
 /*
 internal implementation notes:
 - Subject can't be used for storage keys because it doesn't override equals and
 hashCode
 */
-public class FileCredentialStore implements CredentialStore {
+public class FileCredentialStore<T> implements CredentialStore<T> {
     private final File file;
 
     public FileCredentialStore(File file) {
@@ -49,16 +50,16 @@ public class FileCredentialStore implements CredentialStore {
      * set
      */
     @Override
-    public void store(Subject subject, String password) throws CredentialException {
+    public void store(Subject subject, T password) throws CredentialException {
         if(subject.getPrincipal() == null) {
             throw new IllegalArgumentException("username's principal mustn't be null");
         }
         XStream xStream = new XStream();
-        Map<Object, String> store;
+        Map<Object, T> store;
         if(!file.exists()) {
             store = new HashMap<>();
         }else {
-            store = (Map<Object, String>) xStream.fromXML(file);
+            store = (Map<Object, T>) xStream.fromXML(file);
         }
         store.put(subject.getPrincipal(), password);
         try {
@@ -69,18 +70,18 @@ public class FileCredentialStore implements CredentialStore {
     }
 
     @Override
-    public String retrieve(Subject subject) throws CredentialException {
+    public T retrieve(Subject subject) throws CredentialException {
         if(subject.getPrincipal() == null) {
             throw new IllegalArgumentException("username's principal mustn't be null");
         }
         XStream xStream = new XStream();
-        Map<Object, String> store;
+        Map<Object, T> store;
         if(!file.exists()) {
             store = new HashMap<>();
         }else {
-            store = (Map<Object, String>) xStream.fromXML(file);
+            store = (Map<Object, T>) xStream.fromXML(file);
         }
-        String retValue = store.get(subject.getPrincipal());
+        T retValue = store.get(subject.getPrincipal());
         return retValue;
     }
 }

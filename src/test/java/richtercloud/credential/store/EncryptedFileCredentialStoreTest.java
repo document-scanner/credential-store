@@ -45,7 +45,7 @@ public class EncryptedFileCredentialStoreTest {
         when(session.getAttribute(DialogAuthenticator.TOKEN_KEY)).thenReturn(token);
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
-        FileCredentialStore instance = new EncryptedFileCredentialStore(file);
+        CredentialStore<String> instance = new EncryptedFileCredentialStore<>(file);
         instance.store(subject, password);
         String result = instance.retrieve(subject);
         String expResult = password;

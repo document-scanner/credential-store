@@ -19,10 +19,11 @@ import org.apache.shiro.subject.Subject;
 /**
  *
  * @author richter
+ * @param <T> the type which contains the credentials data
  */
-public interface CredentialStore {
+public interface CredentialStore<T> {
 
-    void store(Subject subject, String password) throws CredentialException;
+    void store(Subject subject, T password) throws CredentialException;
 
-    String retrieve(Subject subject) throws CredentialException;
+    T retrieve(Subject subject) throws CredentialException;
 }

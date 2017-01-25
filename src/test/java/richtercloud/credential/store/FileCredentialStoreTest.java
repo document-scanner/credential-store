@@ -40,7 +40,7 @@ public class FileCredentialStoreTest {
         String password = "password";
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
-        FileCredentialStore instance = new FileCredentialStore(file);
+        FileCredentialStore<String> instance = new FileCredentialStore<>(file);
         instance.store(subject, password);
         String result = instance.retrieve(subject);
         String expResult = password;
