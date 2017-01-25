@@ -23,12 +23,24 @@ import org.apache.shiro.subject.Subject;
 public interface Authenticator {
 
     /**
-     * Authenticates {@code username} using the implementation specific
-     * mechanism
+     * Authenticates {@code subject} using the implementation specific
+     * mechanism.
      *
      * @param subject
      * @return {@code true} if the authentication was successful, {@code false}
      * otherwise
      */
     boolean authenticate(Subject subject);
+
+    /**
+     * Authenticates {@code subject} using the implementation specific
+     * mechanism. Only requests to enter a password for the fixed username.
+     *
+     * @param subject
+     * @param fixedUsername
+     * @return {@code true} if the authentication was successful, {@code false}
+     * otherwise
+     */
+    boolean authenticate(Subject subject,
+            String fixedUsername);
 }

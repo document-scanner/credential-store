@@ -23,10 +23,25 @@ import org.apache.shiro.subject.Subject;
  */
 public class DialogAuthenticator implements Authenticator {
     public final static String TOKEN_KEY = "token";
+    private final String dialogLabelText;
+
+    public DialogAuthenticator(String dialogLabelText) {
+        this.dialogLabelText = dialogLabelText;
+    }
 
     @Override
     public boolean authenticate(Subject subject) {
-        AuthenticationDialog dialog = new AuthenticationDialog(null //parent
+        return authenticate(subject,
+                null //fixedUsername
+        );
+    }
+
+    @Override
+    public boolean authenticate(Subject subject,
+            String fixedUsername) {
+        AuthenticationDialog dialog = new AuthenticationDialog(null, //parent
+                dialogLabelText,
+                fixedUsername
         );
         dialog.setLocationRelativeTo(null //component
         );
