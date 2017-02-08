@@ -21,6 +21,7 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import richtercloud.credential.store.AuthenticationDialog;
+import richtercloud.message.handler.MessageHandler;
 
 /**
  *
@@ -29,9 +30,15 @@ import richtercloud.credential.store.AuthenticationDialog;
 public class DialogAuthenticator implements Authenticator {
     public final static String TOKEN_KEY = "token";
     private final String dialogLabelText;
+    private final MessageHandler messageHandler;
 
-    public DialogAuthenticator(String dialogLabelText) {
+    public DialogAuthenticator(String dialogLabelText,
+            MessageHandler messageHandler) {
         this.dialogLabelText = dialogLabelText;
+        if(messageHandler == null) {
+            throw new IllegalArgumentException("messageHandler mustn't be null");
+        }
+        this.messageHandler = messageHandler;
     }
 
     @Override
@@ -46,7 +53,8 @@ public class DialogAuthenticator implements Authenticator {
             String fixedUsername) throws AuthenticatorException {
         AuthenticationDialog dialog = new AuthenticationDialog(null, //parent
                 dialogLabelText,
-                fixedUsername
+                fixedUsername,
+                messageHandler
         );
         dialog.setLocationRelativeTo(null //component
         );

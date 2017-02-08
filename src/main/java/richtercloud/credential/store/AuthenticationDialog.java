@@ -16,6 +16,9 @@ package richtercloud.credential.store;
 
 import java.awt.Window;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import richtercloud.message.handler.Message;
+import richtercloud.message.handler.MessageHandler;
 
 /**
  * Provides GUI components to enter a username and password which can be
@@ -23,6 +26,11 @@ import javax.swing.JDialog;
  * which explains which credentials to enter and for what and allows to make
  * the username text field read-only in case only a password ought to be
  * required.
+ *
+ * When the user clicks OK and username (logical) or password are empty a
+ * message is displayed to the user and closing denied. This dialog can still be
+ * canceled using the Cancel button.
+ *
  * @author richter
  */
 public class AuthenticationDialog extends JDialog {
@@ -38,6 +46,7 @@ public class AuthenticationDialog extends JDialog {
      * the dialog has been canceled.
      */
     private char[] password = null;
+    private final MessageHandler messageHandler;
 
     /**
      * Creates new form DialogAuthenticator
@@ -48,12 +57,19 @@ public class AuthenticationDialog extends JDialog {
      * @param fixedUsername {@code null} if the username (text field) ought to
      * be editable, a read-only username which is displayed in the text field
      * otherwise
+     * @param messageHandler the handler to pass error messages on empty
+     * username or password
      */
     public AuthenticationDialog(Window parent,
             String labelText,
-            String fixedUsername) {
+            String fixedUsername,
+            MessageHandler messageHandler) {
         super(parent,
                 ModalityType.APPLICATION_MODAL);
+        if(messageHandler == null) {
+            throw new IllegalArgumentException("messageHandler mustn't be null");
+        }
+        this.messageHandler = messageHandler;
         initComponents();
         this.label.setText(labelText);
         if(fixedUsername != null) {
@@ -62,10 +78,12 @@ public class AuthenticationDialog extends JDialog {
         }
     }
 
-    public AuthenticationDialog(Window parent) {
+    public AuthenticationDialog(Window parent,
+            MessageHandler messageHandler) {
         this(parent,
                 LABEL_TEXT_DEFAULT,
-                null //fixedUsername
+                null, //fixedUsername
+                messageHandler
         );
     }
 
@@ -97,8 +115,6 @@ public class AuthenticationDialog extends JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         usernameTextFieldLabel.setText("Username:");
-
-        passwordField.setText("jPasswordField1");
 
         passwordFieldLabel.setText("Password:");
 
@@ -169,6 +185,18 @@ public class AuthenticationDialog extends JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        String username0 = usernameTextField.getText();
+        assert username0 != null;
+        if(username0.isEmpty()) {
+            messageHandler.handle(new Message("Username mustn't be empty", JOptionPane.ERROR_MESSAGE, "Username mustn't be empty"));
+            return;
+        }
+        char[] password0 = passwordField.getPassword();
+        assert password0 != null;
+        if(password0.length == 0) {
+            messageHandler.handle(new Message("Password mustn't be empty", JOptionPane.ERROR_MESSAGE, "Password mustn't be empty"));
+            return;
+        }
         this.username = usernameTextField.getText();
         this.password = passwordField.getPassword();
         setVisible(false);
