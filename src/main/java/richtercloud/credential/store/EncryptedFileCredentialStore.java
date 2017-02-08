@@ -58,10 +58,14 @@ public class EncryptedFileCredentialStore<S, T> implements EncryptedCredentialSt
     public void store(S subject,
             T password,
             String key) throws CredentialException {
+        Tools.validateSubject(subject);
+        Tools.validatePassword(password);
+        Tools.validateKey(key);
         //serialize password in order to make it possible to encrypt
         String passwordXML = X_STREAM.toXML(password);
         try {
-            String passwordXML0 = Encryptor.encrypt(new String(key), passwordXML);
+            String passwordXML0 = Encryptor.encrypt(new String(key),
+                    passwordXML);
             internalStore.store(subject, passwordXML0);
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException | InvalidParameterSpecException ex) {
             throw new CredentialException(ex);
@@ -71,8 +75,10 @@ public class EncryptedFileCredentialStore<S, T> implements EncryptedCredentialSt
     @Override
     public T retrieve(S subject,
             String key) throws CredentialException {
+        Tools.validateSubject(subject);
+        Tools.validateKey(key);
         String passwordXML0 = internalStore.retrieve(subject);
-        if(passwordXML0 == null) {
+        if (passwordXML0 == null) {
             return null;
         }
         try {
@@ -80,7 +86,7 @@ public class EncryptedFileCredentialStore<S, T> implements EncryptedCredentialSt
                     passwordXML0);
             T retValue = (T) X_STREAM.fromXML(password0);
             return retValue;
-        } catch (IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidParameterSpecException ex) {
+        } catch (IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidParameterSpecException | IllegalStateException ex) {
             throw new CredentialException(ex);
         }
     }

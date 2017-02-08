@@ -59,6 +59,8 @@ public class FileCredentialStore<S, T> implements CredentialStore<S, T> {
         if(!isInit()) {
             throw new IllegalStateException("store hasn't been initialized");
         }
+        Tools.validateSubject(subject);
+        Tools.validatePassword(password);
         XStream xStream = new XStream();
         Map<Object, T> store;
         if(!file.exists()) {
@@ -79,6 +81,7 @@ public class FileCredentialStore<S, T> implements CredentialStore<S, T> {
         if(!isInit()) {
             throw new IllegalStateException("store hasn't been initialized");
         }
+        Tools.validateSubject(subject);
         Map<Object, T> store;
         if(!file.exists()) {
             store = new HashMap<>();

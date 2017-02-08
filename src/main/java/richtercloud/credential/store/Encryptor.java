@@ -49,6 +49,8 @@ public class Encryptor {
         salt = encryptedSplit[0];
         encryptedText = encryptedSplit[1];
         TextEncryptor decryptor = Encryptors.text(password, salt);
+            //there's no TextDecryptor, but TextEncryptor.encrypt and
+            //TextDecryptor.decrypt
         String decryptedText = decryptor.decrypt(encryptedText);
         return decryptedText;
     }
