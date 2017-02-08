@@ -15,6 +15,7 @@
 package richtercloud.credential.store;
 
 import java.io.File;
+import org.apache.commons.lang3.RandomStringUtils;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -29,8 +30,11 @@ public class FileCredentialStoreTest {
      */
     @Test
     public void testStoreAndRetrieve() throws Exception {
-        String subject = "username";
-        String password = "password";
+        int subjectLength = TestTools.RANDOM.nextInt(1024*1024)+1;
+        assert subjectLength > 0;
+        String subject = RandomStringUtils.random(subjectLength);
+        int passwordLength = TestTools.RANDOM.nextInt(1024*1024)+1;
+        String password = RandomStringUtils.random(passwordLength);
         File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
         FileCredentialStore<String, String> instance = new FileCredentialStore<>(file);
@@ -43,7 +47,8 @@ public class FileCredentialStoreTest {
         result = instance.retrieve(subject);
         assertEquals(expResult, result);
         //overwrite credential
-        String password2 = "password2";
+        int password2Length = TestTools.RANDOM.nextInt(1024*1024)+1;
+        String password2 = RandomStringUtils.random(password2Length);
         instance.store(subject, password2);
         result = instance.retrieve(subject);
         expResult = password2;

@@ -15,6 +15,8 @@
 package richtercloud.credential.store;
 
 import java.io.File;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -26,10 +28,15 @@ public class EncryptedFileCredentialStoreTest {
 
     @Test
     public void testStoreAndRetrieve() throws Exception {
-        String subject = "username";
-        String key = "key";
-        String password = "password";
-        File file = File.createTempFile(FileCredentialStoreTest.class.getSimpleName(), null);
+        int subjectLength = TestTools.RANDOM.nextInt(1024*1024)+1;
+            //avoid 0
+        assert subjectLength > 0;
+        String subject = RandomStringUtils.random(subjectLength)+1;
+        int keyLength = TestTools.RANDOM.nextInt(1024*1024);
+        String key = RandomStringUtils.random(keyLength);
+        int passwordLength = TestTools.RANDOM.nextInt(1024*1024)+1;
+        String password = RandomStringUtils.random(passwordLength);
+        File file = File.createTempFile(EncryptedFileCredentialStoreTest.class.getSimpleName(), null);
         file.delete();
         EncryptedCredentialStore<String, String> instance = new EncryptedFileCredentialStore<>(file);
         instance.init();
@@ -41,8 +48,25 @@ public class EncryptedFileCredentialStoreTest {
         result = instance.retrieve(subject, key);
         assertEquals(expResult, result);
         //overwrite credential
-        String password2 = "password2";
+        int password2Length = TestTools.RANDOM.nextInt(1024*1024)+1;
+        String password2 = RandomStringUtils.random(password2Length);
         instance.store(subject, password2, key);
+        result = instance.retrieve(subject, key);
+        expResult = password2;
+        assertEquals(expResult, result);
+        //test retrieval with non-matching key...
+        String key2;
+        do {
+            int key2Length = TestTools.RANDOM.nextInt(1024*1024)+1;
+            key2 = RandomStringUtils.random(key2Length);
+        } while(key2.equals(key));
+        try {
+            instance.retrieve(subject, key2);
+            Assert.fail("wrong key doesn't cause CredentialException");
+        }catch(CredentialException ex) {
+            //expected
+        }
+        //...and correct retrieval after retrieval with non-matching key
         result = instance.retrieve(subject, key);
         expResult = password2;
         assertEquals(expResult, result);
